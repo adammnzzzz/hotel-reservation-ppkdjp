@@ -1,29 +1,34 @@
 import React, { useState } from "react";
 import { supabase } from "../config/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // SAKLAR 1
+import { showLoading, showAlert, closeSwal } from "../utils/swalCustom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  // SAKLAR 2: WAJIB ADA INI BIAR 'navigate' DIKENAL
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    showLoading("Authenticating...", "Sabar ya Lan...");
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    closeSwal();
+
     if (error) {
-      alert("Login Gagal: " + error.message);
+      showAlert("error", "Login Gagal!", "Email atau password salah.");
     } else {
-      alert("Login Berhasil! Selamat Datang, Lan.");
-      navigate("/admin"); // Langsung lempar ke dashboard
+      // SAKLAR 3: Pake .then() biar nunggu user klik OK baru pindah
+      showAlert("success", "Mantap!", "Masuk pak Eko!").then(() => {
+        navigate("/admin");
+      });
     }
-    setLoading(false);
   };
 
   return (
@@ -59,10 +64,9 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-900 text-white font-bold py-3 mt-6 hover:bg-black transition-all uppercase tracking-widest"
+            className="w-full bg-[#0F172A] text-white font-black py-4 mt-6 rounded-xl hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100 uppercase text-xs tracking-[0.2em]"
           >
-            {loading ? "Authenticating..." : "Login Now"}
+            Sign In to System
           </button>
         </form>
       </div>
