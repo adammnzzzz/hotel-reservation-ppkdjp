@@ -1,32 +1,48 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // SAKLARNYA DISINI, LAN!
-import RegistrationForm from "../pages/RegistrationForm.jsx";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "../pages/Login.jsx";
 import Sidebar from "../pages/Sidebar.jsx";
-import Login from "../pages/Login.jsx"; // Pastikan lo udah ada file Login.jsx
-import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import SuperAdminLogin from "../superadmin/pages/SuperAdminLogin.jsx";
+import SuperAdminRoutes from "./SuperAdminRoutes.jsx";
+import AdminRoute from "./AdminRoute.jsx";
 
-function AppRouter() {
+const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 1. Jalur Publik */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* 2. Gerbang Masuk */}
         <Route path="/login" element={<Login />} />
+        <Route path="/super-login" element={<SuperAdminLogin />} />
 
-        {/* Halaman Admin dibungkus Satpam */}
+        {/* 2. Jalur Utama Admin (Tamu & Reservasi)
+           PENTING: Di sini roleRequired kita buat 'admin' agar 
+           baik Admin Biasa maupun Super Admin bisa masuk ke sini.
+        */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
-            <ProtectedRoute>
+            <AdminRoute roleRequired="admin">
               <Sidebar />
-            </ProtectedRoute>
+            </AdminRoute>
           }
         />
 
-        <Route path="*" element={<div>404 - Nyasar Bos</div>} />
+        {/* 3. Jalur Khusus Super Admin (Manage Users & Stats Mendalam)
+           Hanya bisa diakses jika login lewat /super-login dengan email master.
+        */}
+        <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
+
+        {/* 4. Jalur Nyasar */}
+        <Route
+          path="*"
+          element={
+            <div className="p-20 text-center font-black">404 - Nyasar Bos</div>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default AppRouter;

@@ -4,13 +4,15 @@ import { useNavigate } from "react-router-dom";
 import ReservationForm from "../components/ReservationForm";
 import ReservationTable from "../components/ReservationTable";
 import ReservationPrint from "../components/ReservationPrint";
+import SuperAdminStats from "../superadmin/pages/SuperAdminStats"; // <-- TAMBAHIN INI
 import LogoImg from "../assets/img/logo.jpg";
 
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("output");
   const [data, setData] = useState([]);
   const [printData, setPrintData] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State baru buat Responsive
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState(""); // <-- TAMBAH STATE BUAT CEK EMAIL
   const navigate = useNavigate();
 
   const refreshData = async () => {
@@ -25,7 +27,18 @@ const Sidebar = () => {
 
   useEffect(() => {
     refreshData();
+    // CEK SIAPA YANG LOGIN SAAT INI
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) setUserEmail(user.email);
+    };
+    getUser();
   }, []);
+
+  // LOGIKA CEK APAKAH INI MASTER LAN
+  const isSuperAdmin = userEmail === "superadmin@gmail.com";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -48,8 +61,6 @@ const Sidebar = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-indigo-100 relative">
-      {/* TOMBOL MENU MOBILE (Hanya muncul di layar kecil) */}
-      {/* TOMBOL MENU MOBILE - Posisi Kiri Atas */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="lg:hidden fixed top-6 left-6 z-50 bg-[#0F172A] text-white p-3.5 rounded-xl shadow-xl active:scale-95 transition-all border border-slate-700"
@@ -76,7 +87,6 @@ const Sidebar = () => {
         )}
       </button>
 
-      {/* OVERLAY (Background Gelap pas sidebar mobile kebuka) */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
@@ -84,13 +94,8 @@ const Sidebar = () => {
         ></div>
       )}
 
-      {/* SIDEBAR - Responsive Logic */}
       <aside
-        className={`
-        fixed inset-y-0 left-0 z-40 w-72 bg-[#0F172A] text-slate-300 flex flex-col shadow-2xl border-r border-slate-800 transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-        lg:relative lg:translate-x-0
-      `}
+        className={`fixed inset-y-0 left-0 z-40 w-72 bg-[#0F172A] text-slate-300 flex flex-col shadow-2xl border-r border-slate-800 transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0`}
       >
         <div className="p-10 flex flex-col items-center">
           <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner mb-4 overflow-hidden">
@@ -116,11 +121,7 @@ const Sidebar = () => {
               setActiveTab("output");
               setIsSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-              activeTab === "output"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                : "hover:bg-slate-800 hover:text-white"
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "output" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30" : "hover:bg-slate-800 hover:text-white"}`}
           >
             <span className="text-lg opacity-70">📋</span> Database Tamu
           </button>
@@ -130,14 +131,28 @@ const Sidebar = () => {
               setActiveTab("input");
               setIsSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-              activeTab === "input"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                : "hover:bg-slate-800 hover:text-white"
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "input" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30" : "hover:bg-slate-800 hover:text-white"}`}
           >
             <span className="text-lg opacity-70">➕</span> Registrasi Baru
           </button>
+
+          {/* MENU KHUSUS SUPER ADMIN - HANYA MUNCUL JIKA EMAIL COCOK */}
+          {isSuperAdmin && (
+            <div className="pt-4 mt-4 border-t border-slate-800/50">
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest px-4 mb-2">
+                Master Menu
+              </p>
+              <button
+                onClick={() => {
+                  setActiveTab("stats");
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "stats" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30" : "hover:bg-slate-800 hover:text-white"}`}
+              >
+                <span className="text-lg opacity-70">📊</span> Statistik Data
+              </button>
+            </div>
+          )}
         </nav>
 
         <div className="p-6 mt-auto border-t border-slate-800">
@@ -164,29 +179,26 @@ const Sidebar = () => {
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA - Padding disesuaikan untuk mobile */}
       <main className="flex-1 overflow-y-auto px-4 py-8 lg:px-12 lg:py-12">
         <div className="max-w-6xl mx-auto">
-          {/* Header Dashboard */}
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                {activeTab === "input" ? "Registrasi Tamu" : "Data Reservasi"}
+                {activeTab === "input"
+                  ? "Registrasi Tamu"
+                  : activeTab === "stats"
+                    ? "Analitik Hotel"
+                    : "Data Reservasi"}
               </h2>
               <p className="text-slate-500 text-xs lg:text-sm mt-1">
-                Kelola data pendaftaran hotel dengan efisien.
+                {activeTab === "stats"
+                  ? "Pantau performa finansial hotel Anda."
+                  : "Kelola data pendaftaran hotel dengan efisien."}
               </p>
-            </div>
-            <div className="flex items-center gap-4 bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] lg:text-[11px] font-bold text-slate-600 uppercase tracking-widest italic">
-                Server Operational
-              </span>
             </div>
           </header>
 
-          {/* Wrapper Konten - Padding dikecilkan untuk mobile */}
-          <div className="bg-white rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 p-4 lg:p-10 min-h-[500px] transition-all overflow-x-auto">
+          <div className="bg-white rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 p-4 lg:p-10 min-h-[500px] transition-all">
             {activeTab === "input" ? (
               <ReservationForm
                 onSuccess={(newRecord) => {
@@ -195,6 +207,8 @@ const Sidebar = () => {
                   else setActiveTab("output");
                 }}
               />
+            ) : activeTab === "stats" ? (
+              <SuperAdminStats />
             ) : (
               <ReservationTable
                 list={data}

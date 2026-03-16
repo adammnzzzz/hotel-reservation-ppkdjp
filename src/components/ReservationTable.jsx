@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { supabase } from "../config/supabaseClient";
-import { showAlert, showLoading, closeSwal } from "../utils/swalCustom"; // Gunakan utility lo!
-import React, { useState } from "react"; // Line 1: Update ini
+import { showAlert, showLoading, closeSwal } from "../utils/swalCustom";
 
 const ReservationTable = ({ list, onRefresh, onPrint }) => {
-  const filteredData = list.filter((item) => {
+  // --- STATE & VARIABLE (Ditambahkan supaya tidak error) ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const dataPerPage = 5;
+
+  // --- LOGIC FILTERING & PAGINATION ---
+  const filteredData = (list || []).filter((item) => {
     const search = searchTerm.toLowerCase();
     return (
-      item.guest_name.toLowerCase().includes(search) ||
-      item.room_no.toLowerCase().includes(search)
+      item.guest_name?.toLowerCase().includes(search) ||
+      item.room_no?.toLowerCase().includes(search)
     );
   });
 
@@ -16,7 +21,8 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
   const indexOfFirstData = indexOfLastData - dataPerPage;
   const currentData = filteredData.slice(indexOfFirstData, indexOfLastData);
   const totalPages = Math.ceil(filteredData.length / dataPerPage);
-  // Fungsi hapus pake SweetAlert2 (Biar elegan, Lan!)
+
+  // Fungsi hapus pake SweetAlert2
   const deleteData = async (id) => {
     showAlert(
       "warning",
@@ -43,7 +49,8 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
 
   return (
     <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200 shadow-xl shadow-slate-200/50">
-      <div className="flex justify-between items-center mb-6">
+      {/* SEARCH BAR */}
+      <div className="flex justify-between items-center mb-6 p-5">
         <input
           type="text"
           placeholder="Cari tamu atau kamar..."
@@ -51,10 +58,11 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1);
+            setCurrentPage(1); // Reset ke hal 1 pas ngetik
           }}
         />
       </div>
+
       <table className="w-full text-left border-collapse bg-white overflow-hidden">
         <thead>
           <tr className="bg-[#0F172A] text-white">
@@ -76,8 +84,8 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {list && list.length > 0 ? (
-            list.map((item) => (
+          {currentData && currentData.length > 0 ? (
+            currentData.map((item) => (
               <tr
                 key={item.id}
                 className="hover:bg-indigo-50/30 transition-all group"
@@ -176,11 +184,13 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
           )}
         </tbody>
       </table>
-      <div className="flex justify-between items-center mt-6">
+
+      {/* PAGINATION CONTROLS */}
+      <div className="flex justify-between items-center p-6 border-t border-slate-100">
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
-          className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:bg-slate-900 hover:text-white disabled:opacity-30"
+          className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:bg-slate-900 hover:text-white disabled:opacity-30 transition-all"
         >
           PREV
         </button>
@@ -190,7 +200,7 @@ const ReservationTable = ({ list, onRefresh, onPrint }) => {
         <button
           disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => setCurrentPage(currentPage + 1)}
-          className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:bg-slate-900 hover:text-white disabled:opacity-30"
+          className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black hover:bg-slate-900 hover:text-white disabled:opacity-30 transition-all"
         >
           NEXT
         </button>
