@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../config/supabaseClient";
 import LogoImg from "../assets/img/logo.jpg";
 import "react-phone-number-input/style.css";
@@ -46,6 +46,21 @@ const ReservationForm = ({ onSuccess }) => {
     notes: "",
   });
 
+  const [countries, setCountries] = useState([]);
+
+  useEffect(() => {
+    // Ambil daftar negara (hanya nama umum) dari API
+    fetch("https://restcountries.com/v3.1/all?fields=name")
+      .then((res) => res.json())
+      .then((data) => {
+        // Urutkan berdasarkan abjad
+        const sorted = data
+          .map((c) => c.name.common)
+          .sort((a, b) => a.localeCompare(b));
+        setCountries(sorted);
+      })
+      .catch((err) => console.error("Gagal ambil data negara:", err));
+  }, []);
   // 2. LOGIC: PILIH NOMOR KAMAR DINAMIS (BISA MULTI)
   const handleRoomSelect = (no) => {
     let selectedRooms = form.room_no
@@ -313,14 +328,25 @@ const ReservationForm = ({ onSuccess }) => {
             </div>
             <div className="col-span-12 md:col-span-4">
               <label className={labelStyle}>Nationality</label>
-              <input
-                type="text"
-                className={inputStyle}
+              <select
+                className={`${inputStyle} cursor-pointer`}
                 value={form.nationality}
                 onChange={(e) =>
                   setForm({ ...form, nationality: e.target.value })
                 }
-              />
+                required
+              >
+                <option value="">Pilih Kewarganegaraan</option>
+                {/* Biar gampang, kita taro Indonesia paling atas kalau mau */}
+                <option value="Indonesia">Indonesia</option>
+                <option disabled>──────────</option>
+
+                {countries.map((country, index) => (
+                  <option key={index} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </section>

@@ -5,6 +5,7 @@ import Sidebar from "../pages/Sidebar.jsx";
 import SuperAdminLogin from "../superadmin/pages/SuperAdminLogin.jsx";
 import SuperAdminRoutes from "./SuperAdminRoutes.jsx";
 import AdminRoute from "./AdminRoute.jsx";
+import NotFound from "../pages/NotFound.jsx";
 
 const AppRouter = () => {
   return (
@@ -34,12 +35,7 @@ const AppRouter = () => {
         <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
 
         {/* 4. Jalur Nyasar */}
-        <Route
-          path="*"
-          element={
-            <div className="p-20 text-center font-black">404 - Nyasar Bos</div>
-          }
-        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
