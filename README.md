@@ -1,5 +1,4 @@
-https://hotel-reservation-ppkdjp.vercel.app/login
-
+https://hotel-reservation-ppkdjp.vercel.app/
 
 # React + Vite
 
