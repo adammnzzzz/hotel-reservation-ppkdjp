@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import ReservationForm from "../components/ReservationForm";
 import ReservationTable from "../components/ReservationTable";
 import ReservationPrint from "../components/ReservationPrint";
-import SuperAdminStats from "../superadmin/pages/SuperAdminStats"; // <-- TAMBAHIN INI
+import SuperAdminStats from "../superadmin/pages/SuperAdminStats";
+import Header from "./Header"; // <-- IMPORT HEADER ANYAR
 import LogoImg from "../assets/img/logo.jpg";
 
 const Sidebar = () => {
@@ -12,7 +13,7 @@ const Sidebar = () => {
   const [data, setData] = useState([]);
   const [printData, setPrintData] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState(""); // <-- TAMBAH STATE BUAT CEK EMAIL
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
 
   const refreshData = async () => {
@@ -27,7 +28,6 @@ const Sidebar = () => {
 
   useEffect(() => {
     refreshData();
-    // CEK SIAPA YANG LOGIN SAAT INI
     const getUser = async () => {
       const {
         data: { user },
@@ -37,7 +37,6 @@ const Sidebar = () => {
     getUser();
   }, []);
 
-  // LOGIKA CEK APAKAH INI MASTER LAN
   const isSuperAdmin = userEmail === "superadmin@gmail.com";
 
   const handleLogout = async () => {
@@ -61,9 +60,10 @@ const Sidebar = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-indigo-100 relative">
+      {/* MOBILE MENU BUTTON */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="lg:hidden fixed top-6 left-6 z-50 bg-[#0F172A] text-white p-3.5 rounded-xl shadow-xl active:scale-95 transition-all border border-slate-700"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-[#0F172A] text-white p-3 rounded-xl shadow-xl active:scale-95 transition-all"
       >
         {isSidebarOpen ? (
           <span className="text-xl block w-6 h-6 flex items-center justify-center font-bold">
@@ -87,6 +87,7 @@ const Sidebar = () => {
         )}
       </button>
 
+      {/* MOBILE OVERLAY */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
@@ -94,6 +95,7 @@ const Sidebar = () => {
         ></div>
       )}
 
+      {/* SIDEBAR ASIDE */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-72 bg-[#0F172A] text-slate-300 flex flex-col shadow-2xl border-r border-slate-800 transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0`}
       >
@@ -136,7 +138,6 @@ const Sidebar = () => {
             <span className="text-lg opacity-70">➕</span> Registrasi Baru
           </button>
 
-          {/* MENU KHUSUS SUPER ADMIN - HANYA MUNCUL JIKA EMAIL COCOK */}
           {isSuperAdmin && (
             <div className="pt-4 mt-4 border-t border-slate-800/50">
               <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest px-4 mb-2">
@@ -179,43 +180,50 @@ const Sidebar = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto px-4 py-8 lg:px-12 lg:py-12">
-        <div className="max-w-6xl mx-auto">
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-              <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                {activeTab === "input"
-                  ? "Registrasi Tamu"
-                  : activeTab === "stats"
-                    ? "Analitik Hotel"
-                    : "Data Reservasi"}
-              </h2>
-              <p className="text-slate-500 text-xs lg:text-sm mt-1">
-                {activeTab === "stats"
-                  ? "Pantau performa finansial hotel Anda."
-                  : "Kelola data pendaftaran hotel dengan efisien."}
-              </p>
-            </div>
-          </header>
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto h-screen flex flex-col">
+        {/* HEADER KOMPONEN (Logo & Profil) */}
+        <Header userEmail={userEmail} isSuperAdmin={isSuperAdmin} />
 
-          <div className="bg-white rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 p-4 lg:p-10 min-h-[500px] transition-all">
-            {activeTab === "input" ? (
-              <ReservationForm
-                onSuccess={(newRecord) => {
-                  refreshData();
-                  if (newRecord) setPrintData(newRecord);
-                  else setActiveTab("output");
-                }}
-              />
-            ) : activeTab === "stats" ? (
-              <SuperAdminStats />
-            ) : (
-              <ReservationTable
-                list={data}
-                onRefresh={refreshData}
-                onPrint={(val) => setPrintData(val)}
-              />
-            )}
+        {/* ISI KONTEN */}
+        <div className="flex-1 px-4 py-8 lg:px-12 lg:py-10">
+          <div className="max-w-6xl mx-auto">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
+                  {activeTab === "input"
+                    ? "Registrasi Tamu"
+                    : activeTab === "stats"
+                      ? "Financial Report"
+                      : "Data Reservasi"}
+                </h2>
+                <p className="text-slate-500 text-xs lg:text-sm mt-1">
+                  {activeTab === "stats"
+                    ? "Pantau performa finansial hotel Anda."
+                    : "Kelola data pendaftaran hotel dengan efisien."}
+                </p>
+              </div>
+            </header>
+
+            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 p-4 lg:p-10 min-h-[500px] transition-all">
+              {activeTab === "input" ? (
+                <ReservationForm
+                  onSuccess={(newRecord) => {
+                    refreshData();
+                    if (newRecord) setPrintData(newRecord);
+                    else setActiveTab("output");
+                  }}
+                />
+              ) : activeTab === "stats" ? (
+                <SuperAdminStats />
+              ) : (
+                <ReservationTable
+                  list={data}
+                  onRefresh={refreshData}
+                  onPrint={(val) => setPrintData(val)}
+                />
+              )}
+            </div>
           </div>
         </div>
       </main>
